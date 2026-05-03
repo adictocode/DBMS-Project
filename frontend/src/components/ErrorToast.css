@@ -1,0 +1,84 @@
+/* ErrorToast.css — Toast Notification Styles */
+
+.error-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  max-width: 420px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--color-danger);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.3s ease;
+  overflow: hidden;
+}
+
+.error-toast.exiting {
+  animation: toastOut 0.3s ease forwards;
+}
+
+.error-toast-icon {
+  color: var(--color-danger);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.error-toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.error-toast-title {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.error-toast-message {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.error-toast-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.error-toast-close:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* Auto-dismiss progress bar */
+.error-toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: var(--color-danger);
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  animation: shrinkWidth linear forwards;
+  transform-origin: left;
+}
+
+@keyframes shrinkWidth {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}

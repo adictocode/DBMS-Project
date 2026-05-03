@@ -1,0 +1,10 @@
+# ================================================================
+#  ONLINE VOTING SYSTEM — Python Dependencies
+# ================================================================
+#  Install with:  pip install -r requirements.txt
+# ================================================================
+
+flask>=3.0
+flask-cors>=4.0
+mariadb>=1.1
+python-dotenv>=1.0
