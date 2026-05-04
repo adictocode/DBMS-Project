@@ -126,16 +126,16 @@ def get_audit_logs():
     params = []
 
     if event_type:
-        conditions.append("event_type = ?")
+        conditions.append("event_type = %s")
         params.append(event_type)
     if since:
-        conditions.append("created_at >= ?")
+        conditions.append("created_at >= %s")
         params.append(since)
 
     sql = "SELECT * FROM Audit_Log"
     if conditions:
         sql += " WHERE " + " AND ".join(conditions)
-    sql += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
+    sql += " ORDER BY created_at DESC LIMIT %s OFFSET %s"
     params.extend([limit, offset])
 
     rows = query_view(sql, tuple(params))

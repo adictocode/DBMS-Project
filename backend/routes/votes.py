@@ -108,7 +108,7 @@ def get_vote_context():
                c.constituency_name, c.state_id
         FROM Voters v
         JOIN Constituencies c ON v.constituency_id = c.constituency_id
-        WHERE v.voter_id = ?
+        WHERE v.voter_id = %s
     """, (voter_id,))
 
     if not voter_rows:
@@ -124,7 +124,7 @@ def get_vote_context():
         SELECT election_id, election_name, election_type, status,
                start_date, end_date, state_id
         FROM Elections
-        WHERE election_type = ? AND state_id = ? AND status = 'Active'
+        WHERE election_type = %s AND state_id = %s AND status = 'Active'
         ORDER BY start_date DESC
         LIMIT 1
     """, (election_type, voter["state_id"]))
@@ -145,7 +145,7 @@ def get_vote_context():
 
     # 3. Check if voter has already voted in this election
     voted_rows = query_view(
-        "SELECT has_voted(?, ?) AS voted",
+        "SELECT has_voted(%s, %s) AS voted",
         (voter_id, election_id)
     )
     if voted_rows and voted_rows[0]["voted"]:
@@ -167,8 +167,8 @@ def get_vote_context():
         JOIN Candidates     cd ON cc.candidate_id    = cd.candidate_id
         JOIN Parties         p ON cd.party_id        = p.party_id
         JOIN Constituencies  c ON cc.constituency_id = c.constituency_id
-        WHERE cc.election_id = ?
-          AND cc.constituency_id = ?
+        WHERE cc.election_id = %s
+          AND cc.constituency_id = %s
           AND cd.is_active = TRUE
         ORDER BY cd.name
     """, (election_id, voter["constituency_id"]))
@@ -235,12 +235,12 @@ def get_candidates_for_election():
         JOIN Candidates     cd ON cc.candidate_id    = cd.candidate_id
         JOIN Parties         p ON cd.party_id        = p.party_id
         JOIN Constituencies  c ON cc.constituency_id = c.constituency_id
-        WHERE cc.election_id = ? AND cd.is_active = TRUE
+        WHERE cc.election_id = %s AND cd.is_active = TRUE
     """
     params = [election_id]
 
     if constituency_id:
-        sql += " AND cc.constituency_id = ?"
+        sql += " AND cc.constituency_id = %s"
         params.append(constituency_id)
 
     sql += " ORDER BY c.constituency_name, cd.name"
@@ -272,7 +272,7 @@ def check_has_voted():
         }), 400
 
     rows = query_view(
-        "SELECT has_voted(?, ?) AS voted",
+        "SELECT has_voted(%s, %s) AS voted",
         (voter_id, election_id)
     )
 

@@ -24,7 +24,7 @@ Interview Note:
     format, and the frontend renders it. Clean separation of concerns.
 """
 
-import mariadb
+import mysql.connector
 from flask import jsonify
 
 
@@ -34,7 +34,7 @@ def register_error_handlers(app):
     Called once during app initialization in app.py.
     """
 
-    @app.errorhandler(mariadb.Error)
+    @app.errorhandler(mysql.connector.Error)
     def handle_mariadb_error(error):
         """
         Translate MariaDB errors into HTTP responses.

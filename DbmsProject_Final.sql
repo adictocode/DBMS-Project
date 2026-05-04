@@ -70,7 +70,8 @@
 -- ================================================================
 -- SECTION 1 : CORE LOOKUP TABLES
 -- ================================================================
-CREATE DATABASE IF NOT EXISTS online_voting_system;
+DROP DATABASE IF EXISTS online_voting_system;
+CREATE DATABASE online_voting_system;
 
 USE online_voting_system;
 CREATE TABLE States (

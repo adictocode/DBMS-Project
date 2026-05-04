@@ -55,10 +55,10 @@ def list_elections():
     params = []
 
     if status:
-        conditions.append("status = ?")
+        conditions.append("status = %s")
         params.append(status)
     if state_id:
-        conditions.append("state_id = ?")
+        conditions.append("state_id = %s")
         params.append(state_id)
 
     sql = "SELECT * FROM Elections"
@@ -179,12 +179,12 @@ def get_election_summary(election_id):
         JOIN Candidates cd ON cc.candidate_id = cd.candidate_id
         JOIN Parties p ON cd.party_id = p.party_id
         LEFT JOIN Votes v ON v.candidate_id = cc.candidate_id AND v.election_id = cc.election_id
-        WHERE cc.election_id = ? AND cd.is_active = TRUE
+        WHERE cc.election_id = %s AND cd.is_active = TRUE
         GROUP BY cd.candidate_id, cd.name, p.party_name
         ORDER BY votes DESC
     """, (election_id,))
     
-    total_votes_row = query_view("SELECT total_votes_cast(?) AS total", (election_id,))
+    total_votes_row = query_view("SELECT total_votes_cast(%s) AS total", (election_id,))
     total_votes = total_votes_row[0]["total"] if total_votes_row else 0
     
     # Calculate turnout: get total registered voters in this election's constituencies
@@ -192,7 +192,7 @@ def get_election_summary(election_id):
         SELECT COUNT(DISTINCT vr.voter_id) AS total_registered
         FROM Election_Constituencies ec
         JOIN Voters vr ON ec.constituency_id = vr.constituency_id AND vr.is_active = TRUE
-        WHERE ec.election_id = ?
+        WHERE ec.election_id = %s
     """, (election_id,))
     total_registered = turnout_row[0]["total_registered"] if turnout_row else 0
     
@@ -220,14 +220,14 @@ def revoke_candidate(candidate_id):
     from database import get_connection
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("UPDATE Candidates SET is_active = FALSE WHERE candidate_id = ?", (candidate_id,))
+        cursor.execute("UPDATE Candidates SET is_active = FALSE WHERE candidate_id = %s", (candidate_id,))
         if cursor.rowcount == 0:
             return jsonify({"success": False, "error": "Candidate not found"}), 404
             
         # Log to Audit_Log
         cursor.execute("""
             INSERT INTO Audit_Log (event_type, target_id, details)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         """, ('CANDIDATE_REVOKED', candidate_id, f"reason={reason}"))
         conn.commit()
         
@@ -245,7 +245,7 @@ def restart_election(election_id):
     with get_connection() as conn:
         cursor = conn.cursor(dictionary=True)
         # Check current status
-        cursor.execute("SELECT status FROM Elections WHERE election_id = ?", (election_id,))
+        cursor.execute("SELECT status FROM Elections WHERE election_id = %s", (election_id,))
         row = cursor.fetchone()
         if not row:
             return jsonify({"success": False, "error": "Election not found"}), 404
@@ -259,13 +259,13 @@ def restart_election(election_id):
             JOIN Candidates cd ON cc.candidate_id = cd.candidate_id
             JOIN Parties p ON cd.party_id = p.party_id
             LEFT JOIN Votes v ON v.candidate_id = cc.candidate_id AND v.election_id = cc.election_id
-            WHERE cc.election_id = ? AND cd.is_active = TRUE
+            WHERE cc.election_id = %s AND cd.is_active = TRUE
             GROUP BY cd.candidate_id, cd.name, p.party_name
             ORDER BY votes DESC
         """, (election_id,))
         candidates_tally = cursor.fetchall()
 
-        cursor.execute("SELECT COUNT(*) AS total FROM Votes WHERE election_id = ?", (election_id,))
+        cursor.execute("SELECT COUNT(*) AS total FROM Votes WHERE election_id = %s", (election_id,))
         total_row = cursor.fetchone()
         total_votes = total_row["total"] if total_row else 0
 
@@ -278,16 +278,16 @@ def restart_election(election_id):
             }
             cursor.execute("""
                 INSERT INTO Election_History (election_id, results_json)
-                VALUES (?, ?)
+                VALUES (%s, %s)
             """, (election_id, json.dumps(snapshot, default=str)))
 
         # --- Perform restart atomically ---
-        cursor.execute("DELETE FROM Votes WHERE election_id = ?", (election_id,))
-        cursor.execute("UPDATE Elections SET status = 'Active' WHERE election_id = ?", (election_id,))
+        cursor.execute("DELETE FROM Votes WHERE election_id = %s", (election_id,))
+        cursor.execute("UPDATE Elections SET status = 'Active' WHERE election_id = %s", (election_id,))
 
         cursor.execute("""
             INSERT INTO Audit_Log (event_type, target_id, details)
-            VALUES (?, ?, ?)
+            VALUES (%s, %s, %s)
         """, ('ELECTION_RESTARTED', election_id,
               f"Election restarted, {total_votes} votes archived to history"))
 
@@ -305,7 +305,7 @@ def get_election_history(election_id):
     rows = query_view("""
         SELECT history_id, election_id, snapshot_at, results_json
         FROM Election_History
-        WHERE election_id = ?
+        WHERE election_id = %s
         ORDER BY snapshot_at DESC
     """, (election_id,))
 
@@ -341,7 +341,7 @@ def list_constituencies():
 
     if state_id:
         rows = query_view(
-            "SELECT * FROM Constituencies WHERE state_id = ? ORDER BY constituency_name",
+            "SELECT * FROM Constituencies WHERE state_id = %s ORDER BY constituency_name",
             (state_id,)
         )
     else:

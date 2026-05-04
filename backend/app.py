@@ -36,7 +36,7 @@ def create_app() -> Flask:
     """
     Application factory — creates and configures the Flask app.
 
-    Why a factory function?
+    Why a factory function%s
         1. Testability — tests can create isolated app instances
         2. Multiple configs — dev/staging/prod can each get a different config
         3. Avoids circular imports — modules import the factory, not a global `app`

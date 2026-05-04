@@ -62,7 +62,7 @@ def _resolve_constituency_from_address(address: str) -> dict | None:
     # Step 2: Get all constituencies in the matched state
     constituencies = query_view(
         "SELECT constituency_id, constituency_name FROM Constituencies "
-        "WHERE state_id = ? ORDER BY constituency_id",
+        "WHERE state_id = %s ORDER BY constituency_id",
         (matched_state["state_id"],)
     )
 
@@ -193,7 +193,7 @@ def check_eligibility(voter_id):
         {"voter_id": 1, "eligible": true}
     """
     rows = query_view(
-        "SELECT is_eligible(?) AS eligible",
+        "SELECT is_eligible(%s) AS eligible",
         (voter_id,)
     )
 
@@ -239,7 +239,7 @@ def get_voter(voter_id):
         SELECT v.voter_id, v.name, v.is_active, v.constituency_id, c.constituency_name
         FROM Voters v
         JOIN Constituencies c ON v.constituency_id = c.constituency_id
-        WHERE v.voter_id = ?
+        WHERE v.voter_id = %s
     """, (voter_id,))
     
     if not rows:
@@ -261,7 +261,7 @@ def get_pending_voters():
 
     if election_id:
         rows = query_view(
-            "SELECT * FROM vw_pending_voters WHERE election_id = ?",
+            "SELECT * FROM vw_pending_voters WHERE election_id = %s",
             (election_id,)
         )
     else:

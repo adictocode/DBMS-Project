@@ -30,7 +30,7 @@ def seed_candidates():
         for p_id in parties:
             cursor.execute("""
                 SELECT candidate_id FROM Candidates 
-                WHERE constituency_id = ? AND party_id = ?
+                WHERE constituency_id = %s AND party_id = %s
             """, (c_id, p_id))
             
             if not cursor.fetchone():
@@ -40,7 +40,7 @@ def seed_candidates():
                 try:
                     cursor.execute("""
                         INSERT INTO Candidates (name, party_id, date_of_birth, constituency_id)
-                        VALUES (?, ?, ?, ?)
+                        VALUES (%s, %s, %s, %s)
                     """, (name, p_id, dob, c_id))
                     db.commit()
                 except mariadb.IntegrityError:
@@ -51,23 +51,23 @@ def seed_candidates():
     elections = cursor.fetchall()
     
     for e_id, s_id in elections:
-        cursor.execute("SELECT constituency_id FROM Constituencies WHERE state_id = ?", (s_id,))
+        cursor.execute("SELECT constituency_id FROM Constituencies WHERE state_id = %s", (s_id,))
         state_constituencies = [row[0] for row in cursor.fetchall()]
         
         for c_id in state_constituencies:
             # Add to Election_Constituencies
             try:
-                cursor.execute("INSERT INTO Election_Constituencies (election_id, constituency_id) VALUES (?, ?)", (e_id, c_id))
+                cursor.execute("INSERT INTO Election_Constituencies (election_id, constituency_id) VALUES (%s, %s)", (e_id, c_id))
                 db.commit()
             except mariadb.IntegrityError:
                 db.rollback()
                 
             # Add candidates to Candidate_Contests
-            cursor.execute("SELECT candidate_id FROM Candidates WHERE constituency_id = ?", (c_id,))
+            cursor.execute("SELECT candidate_id FROM Candidates WHERE constituency_id = %s", (c_id,))
             cands = [row[0] for row in cursor.fetchall()]
             for cand_id in cands:
                 try:
-                    cursor.execute("INSERT INTO Candidate_Contests (candidate_id, constituency_id, election_id) VALUES (?, ?, ?)", (cand_id, c_id, e_id))
+                    cursor.execute("INSERT INTO Candidate_Contests (candidate_id, constituency_id, election_id) VALUES (%s, %s, %s)", (cand_id, c_id, e_id))
                     db.commit()
                 except mariadb.IntegrityError:
                     db.rollback()

@@ -17,7 +17,7 @@ def live_tally():
     election_id = request.args.get("election_id", type=int)
     if election_id:
         rows = query_view(
-            "SELECT * FROM vw_live_tally WHERE election_id = ? ORDER BY constituency_name, total_votes DESC",
+            "SELECT * FROM vw_live_tally WHERE election_id = %s ORDER BY constituency_name, total_votes DESC",
             (election_id,)
         )
     else:
@@ -30,7 +30,7 @@ def turnout():
     """Voter turnout from vw_turnout. Optional ?election_id filter."""
     election_id = request.args.get("election_id", type=int)
     if election_id:
-        rows = query_view("SELECT * FROM vw_turnout WHERE election_id = ?", (election_id,))
+        rows = query_view("SELECT * FROM vw_turnout WHERE election_id = %s", (election_id,))
     else:
         rows = query_view("SELECT * FROM vw_turnout")
     for row in rows:
@@ -44,7 +44,7 @@ def party_performance():
     """Seats won per party from vw_party_performance. Optional ?election_id filter."""
     election_id = request.args.get("election_id", type=int)
     if election_id:
-        rows = query_view("SELECT * FROM vw_party_performance WHERE election_id = ?", (election_id,))
+        rows = query_view("SELECT * FROM vw_party_performance WHERE election_id = %s", (election_id,))
     else:
         rows = query_view("SELECT * FROM vw_party_performance")
     return jsonify({"success": True, "data": rows}), 200

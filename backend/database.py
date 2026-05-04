@@ -21,7 +21,8 @@ Interview Note:
 
 from contextlib import contextmanager
 
-import mariadb
+import mysql.connector
+from mysql.connector import pooling
 
 from config import Config
 
@@ -40,7 +41,7 @@ def _get_pool():
     """Lazily create and return the connection pool."""
     global _pool
     if _pool is None:
-        _pool = mariadb.ConnectionPool(
+        _pool = pooling.MySQLConnectionPool(
             pool_name="voting_pool",
             pool_size=Config.DB_POOL_SIZE,
             pool_reset_connection=True,
@@ -92,7 +93,7 @@ def call_procedure(proc_name: str, args: tuple = (), fetch_last_id: bool = False
         If fetch_last_id=True:  tuple of (list of row dicts, int last_id).
 
     Raises:
-        mariadb.Error: Re-raised for the Flask error handler
+        mysql.connector.Error: Re-raised for the Flask error handler
         to translate into HTTP 400/500.
     """
     with get_connection() as conn:
@@ -144,7 +145,7 @@ def query_view(sql: str, params: tuple = ()) -> list[dict]:
     This function is READ-ONLY. It should only be used for:
         • SELECT * FROM vw_live_tally WHERE ...
         • SELECT * FROM vw_turnout WHERE ...
-        • SELECT is_eligible(?) AS eligible
+        • SELECT is_eligible(%s) AS eligible
         • SELECT * FROM Elections WHERE ...
 
     Args:
@@ -155,7 +156,7 @@ def query_view(sql: str, params: tuple = ()) -> list[dict]:
         List of row dictionaries.
 
     Raises:
-        mariadb.Error: Re-raised for the Flask error handler.
+        mysql.connector.Error: Re-raised for the Flask error handler.
     """
     with get_connection() as conn:
         cursor = conn.cursor(dictionary=True)

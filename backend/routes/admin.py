@@ -35,7 +35,7 @@ def admin_login():
     # Query the database
     # In a production app, we would verify a bcrypt hash here.
     # For this system, we use the plaintext/hashed value as-is for demo purposes.
-    rows = query_view("SELECT admin_id, name, role FROM Admins WHERE email = ? AND password_hash = ?", (email, password))
+    rows = query_view("SELECT admin_id, name, role FROM Admins WHERE email = %s AND password_hash = %s", (email, password))
 
     if not rows:
         return jsonify({"success": False, "error": "Invalid email or password"}), 401
