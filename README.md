@@ -166,4 +166,4 @@ OnlineVotingSystem_DBMS/
 
 ---
 
-*Built by Aditya Kochar as a portfolio project for placements and internships.*
+
